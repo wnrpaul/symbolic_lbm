@@ -14,6 +14,14 @@ DEFAULT_SYMBOLS = {
     # Ajoutez d'autres symboles si nécessaire
 }
 
+# TEST_SYMBOLS = {
+#     rho: sp.symbols('a'),           
+#     tp: sp.symbols('b'),
+#     ux: sp.symbols('c'),
+#     uy: sp.symbols('d'),
+#     uz: sp.symbols('e'),
+# }
+
 LATEX_SYMBOLS = {
     'cs': r'c_s',
     'rho': r'\rho',

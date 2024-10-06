@@ -1,6 +1,6 @@
 import sympy as sp
 import numpy as np
-import functools
+import logging
 from utils import kronecker, generate_indices
 from constants import *
 
@@ -23,6 +23,7 @@ class Lattice:
         self.Wi = None
         self.Ci = None
         self._initialize_lattice()
+        self.print_lattice_info()
 
     def _initialize_lattice(self):
         """
@@ -95,3 +96,22 @@ class Lattice:
             'z': sp.Matrix([0, 1, -1, 0, 0, 0, 0, 1, -1, 1, -1, 1, -1,
                             1, -1, 0, 0, 0, 0, 1, -1, 1, -1, 1, -1, 1, -1])
         }
+
+    def print_lattice_info(self):
+        """
+        Prints the weights Wi and velocities Ci of the lattice based on the logging level.
+        """
+        # Vérifier si le niveau de logging est au moins INFO
+        if not logging.getLogger().isEnabledFor(logging.INFO):
+            return  # Ne rien faire si le niveau de logging est supérieur à INFO
+        logging.info(f"Initializing D{self.D}Q{self.Q} lattice.")
+        # Convert Wi to a list of strings and join with commas
+        weights_list = [str(wi) for wi in self.Wi]
+        weights_str = ', '.join(weights_list)
+        logging.debug(f"Weights (Wi): [{weights_str}]")
+        # Print each component of Ci on a separate line
+        for coord in self.Ci:
+            # Convert Ci[coord] to a list of strings and join with commas
+            ci_list = [str(ci) for ci in self.Ci[coord]]
+            ci_str = ', '.join(ci_list)
+            logging.debug(f"Velocities (Ci[{coord}]): [{ci_str}]")

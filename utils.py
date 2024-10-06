@@ -1,4 +1,7 @@
 import itertools as itt
+import sympy as sp
+import math
+from collections import Counter
 
 def kronecker(a, b):
   return 1 if a==b else 0
@@ -27,6 +30,22 @@ def compute_kronecker_third_order_coeff(indices, var):
     
     # Compute the third order term
     return delta_ab*var[c]+delta_ac*var[b]+delta_bc*var[a]
+
+def compute_kronecker_fourth_order(indices):
+    # Get indices
+    a,b,c, d = indices
+
+    # Compute the Kronecker delta terms
+    delta_ab = kronecker(a, b)
+    delta_ac = kronecker(a, c)
+    delta_ad = kronecker(a, d)
+    delta_bc = kronecker(b, c)
+    delta_bd = kronecker(b, d)
+    delta_cd = kronecker(c, d)
+
+    # Compute the coefficients for the fourth order terms
+    delta_delta_abcd = delta_ab*delta_cd+delta_ac*delta_bd+delta_ad*delta_bc
+    return delta_delta_abcd
 
 def compute_kronecker_fourth_order_coeff(indices, var):
     # Get indices
@@ -76,9 +95,37 @@ def generate_indices(coords, n, permute=True, as_string=False):
         return [''.join(item) for item in iterator]
   else:
         return list(iterator)
+  
+
+def compute_multiplicity(order, indices):
+    """
+    Compute the multiplicity of the indices based on the given order.
+
+    The multiplicity is calculated as the factorial of the order divided by
+    the product of factorials of the counts of each index. This ensures that
+    each index is counted the correct number of times in the sum.
+
+    Parameters:
+    - order (int): The order of the polynomial.
+    - indices (list): A list of indices.
+
+    Returns:
+    - multiplicity (int): The multiplicity of the indices.
+
+    Example:
+    >>> compute_multiplicty(2, ['x', 'x', 'y'])
+    1
+    >>> compute_multiplicty(2, ['x', 'y', 'y'])
+    2
+    """
+    multiplicity = math.factorial(order)
+    counts = Counter(indices)
+    for count in counts.values():
+        multiplicity //= math.factorial(count)
+    return multiplicity
 
 
-def circular_permutation(sequence):
+def generate_circular_permutation(sequence):
     """
     Génère toutes les rotations circulaires de la séquence donnée.
 
@@ -90,3 +137,41 @@ def circular_permutation(sequence):
     """
     n = len(sequence)
     return [sequence[i:] + sequence[:i] for i in range(n)]
+
+# Function to divide each element of two matrices
+def matrix_divide_elementwise(a, b):
+    """
+    Divide each element of matrix `a` by the corresponding element of matrix `b`.
+
+    Parameters:
+    a (sympy.Matrix): The matrix to be divided.
+    b (sympy.Matrix): The matrix used for division.
+
+    Returns:
+    sympy.Matrix: A new matrix containing the element-wise division results.
+
+    Raises:
+    ValueError: If the dimensions of `a` and `b` are not the same.
+
+    Notes:
+    - If an element in `b` is zero, the corresponding element in the result matrix will be NaN.
+    """
+
+    if a.shape != b.shape:
+        raise ValueError("The matrices must have the same dimension.")
+    
+    # Create a new matrix to store the results
+    result = sp.Matrix(a.shape[0], a.shape[1], lambda i, j: 0)
+    
+    # Loop over the elements of the matrices to perform the division
+    for i in range(a.shape[0]):
+        for j in range(b.shape[1]):
+            if b[i, j] == 0:
+                result[i, j] = sp.nan  # Return NaN if b[i] is zero
+            else:
+                result[i, j] = a[i, j] / b[i, j]
+    return result
+
+
+def print_mat(matrix):
+    return [h for slist in matrix.tolist() for h in slist]

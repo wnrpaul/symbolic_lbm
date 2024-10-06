@@ -19,6 +19,10 @@ ONE_216 = sp.Rational(1, 216)
 SQRT2 = sp.sqrt(2)
 SQRT3 = sp.sqrt(3)
 
+# Constants for the istropic fourth order terms
+ISO_4_ONE_9_3P2SQRT3 = 4 * ONE_9 * (3 + 2 * SQRT3)
+ISO_4_ONE_9_3MSQRT3 = 4 * ONE_9 * (3 - SQRT3)
+
 # Standard lattice for indices
 COORDS = ('x', 'y', 'z')
 
