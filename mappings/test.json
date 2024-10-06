@@ -1,0 +1,11 @@
+{
+  "rho": "density",
+  "tp": "temperature",
+  "ux": "velocity_x",
+  "uy": "velocity_y",
+  "uz": "velocity_z",
+  "fx": "acceleration_x",
+  "fy": "acceleration_y",
+  "fz": "acceleration_z",
+  "ups": "upsilon"
+}
