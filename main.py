@@ -3,6 +3,7 @@ import os
 import argparse
 import sympy as sp
 import logging
+from code_generation import write_output_file, generate_cpp_code, optimize_matrix_flops, write_cpp_matrix_from_cse
 from equilibrium_functions import D3Q19Iso, D3Q19Unified, D3Q19GuoImproved, GradHermite
 from symbols_mapping import DEFAULT_SYMBOLS, LATEX_SYMBOLS, load_custom_symbols
 
@@ -20,6 +21,7 @@ def main():
                         help='Order of Hermite expansion for the equilibrium.')
     parser.add_argument('--output_format', type=str, default='cpp',
                         help='Output format (cpp, latex, custom).')
+    parser.add_argument('--optim_flops', action='store_true', help='Optimize the number of FLOPs.')
     parser.add_argument('--user_equilibrium_path', type=str,
                         help='Path to user equilibrium function script.')
     parser.add_argument('--user_symbol_path', type=str,
@@ -43,7 +45,7 @@ def main():
 
     if args.output_format == 'cpp':
         symbols = DEFAULT_SYMBOLS
-        logging.info("Using C++ symbols?")
+        logging.info("Using C++ symbols.")
     elif args.output_format == 'latex':
         symbols = LATEX_SYMBOLS
         logging.info("Using LaTeX symbols.")
@@ -78,8 +80,29 @@ def main():
         raise ValueError(f"Unknown equilibrium function type: {args.eq_type}")
 
     # Equilibrium function initialization
-    fEq = eq_class.compute_feq()
-    return eq_class, fEq
+    f_eq = eq_class.compute_feq()
+    
+    # Writing of the equilibrium function
+    if args.output_format == 'cpp':
+        filename = os.path.join('output', args.output_format, eq_class.name + '.cpp')
+        logging.info(f"Generating C++ code for {eq_class.name}: {filename}")
+        content = generate_cpp_code(matrix=f_eq, 
+                         place_holder=sp.MatrixSymbol(symbols['fEq'], eq_class.Q, 1), 
+                         order=eq_class.order_0)
+        write_output_file(content, filename=filename)
+    
+    if args.optim_flops:
+        logging.info("Optimizing the number of FLOPs:")
+        cse_matrix_tuple = optimize_matrix_flops(f_eq, sub_list=[])
+        if args.output_format == 'cpp':
+            filename = os.path.join('output', args.output_format, eq_class.name + '_optim.cpp')
+            write_cpp_matrix_from_cse(cse_matrix_tuple=cse_matrix_tuple,
+                                  place_holder=sp.MatrixSymbol(symbols['fEq'], eq_class.Q, 1),
+                                  order=eq_class.order_0,
+                                  filename=filename)
+
+    
+    return eq_class, f_eq
 
 
 if __name__ == '__main__':

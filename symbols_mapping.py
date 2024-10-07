@@ -11,6 +11,7 @@ DEFAULT_SYMBOLS = {
     'fy': 'fy',
     'fz': 'fz',
     'ups': 'ups',
+    'fEq': 'fEq',
     # Ajoutez d'autres symboles si nécessaire
 }
 
