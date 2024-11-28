@@ -10,18 +10,20 @@ from symbols_mapping import DEFAULT_SYMBOLS, LATEX_SYMBOLS, load_custom_symbols
 
 def main():
     parser = argparse.ArgumentParser(description='Symbolic LBM calculation.')
-    parser.add_argument('--D', type=int, default=3, help='Spatial dimension.')
+    parser.add_argument('--D', type=int, default=3, 
+                        help='Spatial dimension.')
     parser.add_argument('--Q', type=int, default=19,
                         help='Number of lattice velocities.')
-    parser.add_argument('--eq_type', type=str, default='Guo-Improved',
+    parser.add_argument('--eq_type', type=str, default='grad-hermite',
                         help='Type of equilibrium function.')
     parser.add_argument('--is_thermal', action='store_true',
                         help='Enable thermal equilibrium.')
-    parser.add_argument('--order_0', type=int, default=4,
+    parser.add_argument('--order_0', type=int, default=3,
                         help='Order of Hermite expansion for the equilibrium.')
     parser.add_argument('--output_format', type=str, default='cpp',
                         help='Output format (cpp, latex, custom).')
-    parser.add_argument('--optim_flops', action='store_true', help='Optimize the number of FLOPs.')
+    parser.add_argument('--optim_flops', action='store_true', 
+                        help='Optimize the number of FLOPs.')
     parser.add_argument('--user_equilibrium_path', type=str,
                         help='Path to user equilibrium function script.')
     parser.add_argument('--user_symbol_path', type=str,
@@ -29,7 +31,8 @@ def main():
     # Add arguments for logging level
     choices = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
     parser.add_argument('--log_level', type=str, choices=choices,
-                        default='WARNING', help='Set the logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
+                        default='WARNING', 
+                        help=f'Set the logging level: {choices}.')
 
     args = parser.parse_args()
 
@@ -81,7 +84,7 @@ def main():
 
     # Equilibrium function initialization
     f_eq = eq_class.compute_feq()
-    
+
     # Writing of the equilibrium function
     if args.output_format == 'cpp':
         filename = os.path.join('output', args.output_format, eq_class.name + '.cpp')

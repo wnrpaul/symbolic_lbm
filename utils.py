@@ -8,7 +8,7 @@ def kronecker(a, b):
 
 def compute_delta_terms(indices):
     """
-    Calcule les symboles de Kronecker pour une liste d'indices.
+    Compute the Kronecker symbols for a list of indices.
     """
     delta_terms = {}
     n = len(indices)
@@ -74,27 +74,27 @@ def compute_kronecker_fourth_order_coeff(indices, var):
     
 
 def generate_indices(coords, n, permute=True, as_string=False):
-  """
-    Génère une liste de tuples représentant les indices formés en combinant les éléments de 'coords', répétés 'n' fois.
+    """
+    Generates a list of tuples representing the indices formed by combining the elements of 'coords', repeated 'n' times.
 
     Args:
-        coords (list or tuple): Liste des labels de coordonnées (par exemple, ('x', 'y', 'z')).
-        n (int): Nombre de fois que les coordonnées sont répétées.
-        permute (bool): Si True, génère toutes les permutations possibles (avec répétition).
-                        Si False, génère les combinaisons avec répétition.
+        coords (list or tuple): List of coordinate labels (e.g., ('x', 'y', 'z')).
+        n (int): Number of times the coordinates are repeated.
+        permute (bool): If True, generates all possible permutations (with repetition).
+                        If False, generates combinations with repetition.
 
     Returns:
-        list: Liste de tuples représentant les indices.
+        list: List of tuples representing the indices.
     """
-  if permute:
-        iterator = itt.product(coords, repeat=n)
-  else:
-        iterator = itt.combinations_with_replacement(coords, n)
-  
-  if as_string:
-        return [''.join(item) for item in iterator]
-  else:
-        return list(iterator)
+    if permute:
+            iterator = itt.product(coords, repeat=n)
+    else:
+            iterator = itt.combinations_with_replacement(coords, n)
+    
+    if as_string:
+            return [''.join(item) for item in iterator]
+    else:
+            return list(iterator)
   
 
 def compute_multiplicity(order, indices):
@@ -127,13 +127,13 @@ def compute_multiplicity(order, indices):
 
 def generate_circular_permutation(sequence):
     """
-    Génère toutes les rotations circulaires de la séquence donnée.
+    Generate all circular rotations of the given sequence.
 
     Args:
-        sequence (list): La séquence à faire tourner.
+        sequence (list): The sequence to rotate.
 
     Returns:
-        list: Liste de toutes les rotations circulaires de la séquence.
+        list: List of all circular rotations of the sequence.
     """
     n = len(sequence)
     return [sequence[i:] + sequence[:i] for i in range(n)]

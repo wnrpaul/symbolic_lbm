@@ -7,16 +7,16 @@ from constants import *
 
 class Lattice:
     """
-    Classe pour initialiser les poids et les vitesses du réseau en fonction de D et Q.
+    Class to initialize the weights and velocities of the lattice based on D and Q.
     """
 
     def __init__(self, D=3, Q=19):
         """
-        Initialise le réseau avec la dimension D et le nombre de vitesses Q.
+        Initialize the lattice with dimension D and number of velocities Q.
 
         Args:
-            D (int): Dimension spatiale (1, 2 ou 3).
-            Q (int): Nombre de vitesses du réseau (3, 9, 19, 27).
+            D (int): Spatial dimension (1, 2, or 3).
+            Q (int): Number of lattice velocities (3, 9, 19, 27).
         """
         self.D = D
         self.Q = Q
@@ -27,7 +27,7 @@ class Lattice:
 
     def _initialize_lattice(self):
         """
-        Initialise les poids Wi et les vitesses Ci en fonction de D et Q.
+        Initialize the weights Wi and velocities Ci based on D and Q.
         """
         if self.D == 1 and self.Q == 3:
             self._initialize_D1Q3()
@@ -39,7 +39,7 @@ class Lattice:
             self._initialize_D3Q27()
         else:
             raise ValueError(
-                f"Le réseau D{self.D}Q{self.Q} n'est pas implémenté.")
+                f"The lattice D{self.D}Q{self.Q} is not implemented.")
 
     def _initialize_D1Q3(self):
         self.Wi = sp.Matrix([2*ONE_3, ONE_6, ONE_6])
@@ -50,7 +50,7 @@ class Lattice:
         self.Ci = {
             'x': sp.Matrix([0, 1, 0, -1, 0, 1, -1, -1, 1]),
             'y': sp.Matrix([0, 0, 1, 0, -1, 1, 1, -1, -1]),
-            'z': sp.Matrix([0]*9)  # Non utilisé en 2D
+            'z': sp.Matrix([0]*9)  # Not used in 2D
         }
 
     def _initialize_D3Q19(self):
@@ -71,13 +71,13 @@ class Lattice:
     #   self.Wi = sp.Matrix([w0] + [w1]*6 + [w2]*12)
     #   c = [0, 1, -1]
     #   directions = [
-    #       (0, 0, 0),  # zéro
-    #       (0, 0, 1), (0, 0, -1),  # axes z
-    #       (0, 1, 0), (0, -1, 0),  # axes y
-    #       (1, 0, 0), (-1, 0, 0),  # axes x
-    #       (1, 1, 0), (-1, -1, 0), (1, -1, 0), (-1, 1, 0),  # plans xy
-    #       (1, 0, 1), (-1, 0, -1), (1, 0, -1), (-1, 0, 1),  # plans xz
-    #       (0, 1, 1), (0, -1, -1), (0, 1, -1), (0, -1, 1)   # plans yz
+    #       (0, 0, 0),  # zero
+    #       (0, 0, 1), (0, 0, -1),  # z axes
+    #       (0, 1, 0), (0, -1, 0),  # y axes
+    #       (1, 0, 0), (-1, 0, 0),  # x axes
+    #       (1, 1, 0), (-1, -1, 0), (1, -1, 0), (-1, 1, 0),  # xy planes
+    #       (1, 0, 1), (-1, 0, -1), (1, 0, -1), (-1, 0, 1),  # xz planes
+    #       (0, 1, 1), (0, -1, -1), (0, 1, -1), (0, -1, 1)   # yz planes
     #   ]
     #   self.Ci = {
     #       'x': sp.Matrix([dx for dx, dy, dz in directions]),
@@ -101,9 +101,9 @@ class Lattice:
         """
         Prints the weights Wi and velocities Ci of the lattice based on the logging level.
         """
-        # Vérifier si le niveau de logging est au moins INFO
+        # Check if the logging level is at least INFO
         if not logging.getLogger().isEnabledFor(logging.INFO):
-            return  # Ne rien faire si le niveau de logging est supérieur à INFO
+            return  # Do nothing if the logging level is higher than INFO
         logging.info(f"Initializing D{self.D}Q{self.Q} lattice.")
         # Convert Wi to a list of strings and join with commas
         weights_list = [str(wi) for wi in self.Wi]

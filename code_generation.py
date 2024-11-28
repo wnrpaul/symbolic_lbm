@@ -7,14 +7,13 @@ from sympy.codegen.rewriting import create_expand_pow_optimization
 
 def write_output_file(content, filename):
     """
-    Écrit le contenu dans le fichier spécifié, en s'assurant que le répertoire existe.
+    Writes the content to the specified file, ensuring the directory exists.
     """
     path = os.path.dirname(filename)
     os.makedirs(path, exist_ok=True)
     with open(filename, 'w') as f:
         f.write(content)
     logging.info(f"Successfully wrote output file in '{filename}'.")
-    
 
 
 def generate_cpp_code(matrix, place_holder, order):
@@ -46,22 +45,22 @@ def write_cpp_matrix_from_cse(cse_matrix_tuple, place_holder, order, filename):
         order (int): Order for the power expansion optimization.
         filename (str): Output file name.
     """
-    # Créer la fonction d'expansion en fonction de l'ordre
+    # Create the expansion function based on the order
     expand_opt = create_expand_pow_optimization(order)
 
-    # S'assurer que le répertoire de sortie existe
+    # Ensure the output directory exists
     path = os.path.dirname(filename)
     os.makedirs(path, exist_ok=True)
 
     try:
         with open(filename, 'w') as ffile:
-            # Écrire les sous-expressions communes
+            # Write the common subexpressions
             for var, expr in cse_matrix_tuple[0]:
                 expr_expanded = sp.expand(expr)
                 code = sp.ccode(expr_expanded, assign_to=var, standard='c99')
                 ffile.write('const double ' + code + ';\n')
-            # Écrire la matrice finale en utilisant les sous-expressions
-            # [0] si cse_matrix_tuple_opt[1] est une liste
+            # Write the final matrix using the subexpressions
+            # [0] if cse_matrix_tuple_opt[1] is a list
             expr_final = expand_opt(cse_matrix_tuple[1])
             code_final = sp.ccode(
                 expr_final, assign_to=place_holder, standard='c99')
@@ -69,21 +68,7 @@ def write_cpp_matrix_from_cse(cse_matrix_tuple, place_holder, order, filename):
         logging.info(f"Successfully generated C++ code in '{filename}'.")
     except Exception as e:
         logging.error(f"Error during C++ code generation: {e}")
-        raise
-
-# def generate_cpp_code(expression, symbols):
-#     # Utilisez sp.ccode en remplaçant les symboles par ceux du dictionnaire
-#     code = sp.ccode(expression)
-#     for logical_name, symbol_name in symbols.items():
-#         code = code.replace(str(logical_name), symbol_name)
-#     return code
-
-# def generate_latex_code(expression, symbols):
-#     # Utilisez sp.latex en remplaçant les symboles par ceux du dictionnaire
-#     code = sp.latex(expression)
-#     for logical_name, symbol_name in symbols.items():
-#         code = code.replace(str(logical_name), symbol_name)
-#     return code
+        raises
 
 
 def optimize_matrix_flops(matrix, sub_list):
@@ -100,8 +85,8 @@ def optimize_matrix_flops(matrix, sub_list):
     Returns:
         tuple: A tuple containing the common subexpressions and the optimized matrix.
     """
-    # Count the total number of operation, when visual arg is used, it shows
-    # all the type of operations
+    # Count the total number of operations, when visual arg is used, it shows
+    # all the types of operations
     count_op = sp.count_ops(matrix)
     logging.info(
         f'{f"Number of operations:":<35}' +
@@ -126,7 +111,7 @@ def optimize_matrix_flops(matrix, sub_list):
     cse_list_of_tuple = cse_mat_tup[0]
     cse_matrix = cse_mat_tup[1][0]
 
-    # Subtitute all the expression using sub_list
+    # Substitute all the expressions using sub_list
     for sub in sub_list:
         cse_list_of_tuple = [(cse_list_of_tuple[i][0],
                               cse_list_of_tuple[i][1].subs(sub))

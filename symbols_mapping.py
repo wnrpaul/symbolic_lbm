@@ -12,7 +12,7 @@ DEFAULT_SYMBOLS = {
     'fz': 'fz',
     'ups': 'ups',
     'fEq': 'fEq',
-    # Ajoutez d'autres symboles si nécessaire
+    # Add other symbols if necessary
 }
 
 # TEST_SYMBOLS = {
@@ -34,7 +34,7 @@ LATEX_SYMBOLS = {
     'fy': r'g_y',
     'fz': r'g_z',
     'ups': r'\Upsilon',
-    # Ajoutez d'autres symboles si nécessaire
+    # Add other symbols if necessary
 }
 
 
@@ -42,4 +42,3 @@ def load_custom_symbols(path):
     with open(path, 'r') as f:
         custom_symbols = json.load(f)
     return custom_symbols
-

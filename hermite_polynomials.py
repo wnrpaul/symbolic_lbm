@@ -10,14 +10,14 @@ from utils import *
 class HermitePolynomials:
     def __init__(self, Ci, cs2, order, Q, D):
         """
-        Initialise les polynômes d'Hermite.
+        Initialize the Hermite polynomials.
 
         Args:
-            Ci (dict): Dictionnaire des vecteurs de vitesse.
-            cs2 (sympy.Expr): Vitesse du son au carré.
-            order (int): Ordre maximal des polynômes.
-            Q (int): Nombre de directions du réseau.
-            D (int): Dimension spatiale.
+            Ci (dict): Dictionary of velocity vectors.
+            cs2 (sympy.Expr): Speed of sound squared.
+            order (int): Maximum order of the polynomials.
+            Q (int): Number of lattice directions.
+            D (int): Spatial dimension.
         """
         self.Ci = Ci
         self.order = order
@@ -33,28 +33,28 @@ class HermitePolynomials:
 
     def _compute_hermite_polynomials(self):
         """
-        Génère les polynômes d'Hermite non dimensionnels jusqu'à l'ordre spécifié.
-        Génère le dictionnaire Ci jusqu'à l'ordre spécifié.
+        Generates the non-dimensional Hermite polynomials up to the specified order.
+        Generates the dictionary Ci up to the specified order.
 
         Args:
-            order (int): L'ordre maximal des polynômes d'Hermite à générer. Maximal 4
+            order (int): The maximum order of the Hermite polynomials to generate. Maximum 4
 
         Returns:
-            dict: Un dictionnaire contenant les polynômes d'Hermite Hi.
+            dict: A dictionary containing the Hermite polynomials Hi.
         """
 
         mat1 = get_constant_mat1(self.Q)
 
-        # Initialize the non-dimensionnal Hermite polynomials : Hi := Hi/(r**2)
+        # Initialize the non-dimensional Hermite polynomials: Hi := Hi/(r**2)
         self.Hi = {'0': mat1}
         logging.debug(f"Order 0: Hi['0'] = {print_mat(self.Hi['0'])}")
 
-        # Initialiser Ci avec les composantes de base si ce n'est pas déjà fait
-        # self.Ci doit contenir les Ci[a] pour a dans coords
+        # Initialize Ci with the base components if not already done
+        # self.Ci must contain the Ci[a] for a in coords
         for n in range(1, self.order + 1):
             if n > MAX_ORDER:
                 raise ValueError(
-                    "L'ordre maximal des polynômes d'Hermite est 4 pour le moment.")
+                    "The maximum order of Hermite polynomials is 4 for now.")
 
             indices_list = generate_indices(
                 self.coords, n, permute=False, as_string=False)
@@ -62,16 +62,16 @@ class HermitePolynomials:
             for indices in indices_list:
                 key = ''.join(indices)
 
-                # Calculer le produit des Ci correspondants
+                # Compute the product of the corresponding Ci
                 Ci_product = functools.reduce(
                     lambda x, y: sp.matrix_multiply_elementwise(x, y),
                     [self.Ci[idx] for idx in indices]
                 )
 
-                # Stocker Ci_product dans self.Ci
+                # Store Ci_product in self.Ci
                 self.Ci[key] = Ci_product
 
-                # Calcul des polynômes d'Hermite Hi
+                # Compute the Hermite polynomials Hi
                 if n == 1:
                     self.Hi[key] = self.Ci[key]
                 elif n == 2:

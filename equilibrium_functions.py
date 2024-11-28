@@ -2,14 +2,15 @@
 """
 Module `equilibrium_functions.py`
 
-Ce module contient les définitions des fonctions d'équilibre pour la méthode de Boltzmann sur réseau (LBM).
-Il permet de calculer les fonctions d'équilibre en fonction de différents paramètres et configurations.
+This module contains the definitions of equilibrium functions for the lattice Boltzmann method (LBM).
+It allows the calculation of equilibrium functions based on various parameters and configurations.
 
-Classes :
-- EquilibriumFunction : classe de base pour les fonctions d'équilibre.
-- GuoImproved : implémentation spécifique de la fonction d'équilibre améliorée de Guo.
+Classes:
+- EquilibriumFunction: base class for equilibrium functions.
+- GuoImproved: specific implementation of Guo's improved equilibrium function.
+- ...
 
-Exemple d'utilisation :
+Usage example:
 >>> eq_func = GuoImproved(D=3, Q=19, is_thermal=True, order_0=4)
 >>> eq_func.compute()
 """
@@ -19,31 +20,29 @@ import operator
 import sympy as sp
 import numpy as np
 from lattices import Lattice
-from symbolic_lbm.hermite_polynomials import HermitePolynomials
+from hermite_polynomials import HermitePolynomials
 from symbols_mapping import DEFAULT_SYMBOLS
 from utils import *
 from constants import *
-
-
 class EquilibriumFunction:
     def __init__(self, D=3, Q=19, is_thermal=False, order_0=3, symbols=None):
         self.D = D
         self.Q = Q
         self.is_thermal = is_thermal
         self.order_0 = order_0
-        self.symbols = symbols  # Dictionnaire de symboles personnalisés
+        self.symbols = symbols  # Dictionary of custom symbols
         self.name = f'D{self.D}Q{self.Q}_T{int(self.is_thermal)}_O{self.order_0}'
         logging.info(f"Initializing equilibrium function {self.name}")
 
         if symbols is None:
             self.symbols = {}
 
-        # Fusionner les symboles par défaut avec ceux de l'utilisateur
+        # Merge default symbols with user-provided symbols
         self.symbols = {**DEFAULT_SYMBOLS, **self.symbols}
         logging.info(f"Using symbols: {self.symbols}")
         self.coords = COORDS[:self.D]
 
-        # for sym in required_symbols:
+        # Check that all required symbols are present
         #     if sym not in self.symbols:
         #         warnings.warn(f"Le symbole '{sym}' est requis mais n'a pas été défini, valeur par défaut utilisée.")
         #         self.symbols[sym] = sym  # Utilisation du nom du symbole comme valeur par défaut
@@ -54,23 +53,14 @@ class EquilibriumFunction:
         for sym in required_symbols:
             if sym not in self.symbols:
                 raise ValueError(
-                    f"Le symbole '{sym}' est requis mais n'a pas été défini.")
+                    f"The symbol '{sym}' is required but has not been defined.")
 
-            # Fusionner les symboles par défaut avec ceux de l'utilisateur
-            # self.symbols = DEFAULT_SYMBOLS.copy()
-            # if symbols:
-            #   for key, value in symbols.items():
-            #     if key in self.symbols:
-            #         self.symbols[key] = value
-            #     else:
-            #         warnings.warn(f"Symbole inconnu '{key}' fourni. Il sera ignoré.")
-
-        # Initialisation du réseau
+        # Initialize the lattice
         lattice = Lattice(self.D, self.Q)
         self.Wi = lattice.Wi
         self.Ci = lattice.Ci
 
-        # Initialisation des variables macroscopiques
+        # Initialize macroscopic variables
         self._initialize_macroscopic_vars()
 
         
@@ -119,7 +109,7 @@ class EquilibriumFunction:
         print("=================================\n")
 
     def _initialize_macroscopic_vars(self):
-        # Récupération des noms de symboles à partir du dictionnaire
+        # Retrieve symbol names from the dictionary
         # sqrt(r Tref), Lattice sound speed
         cs_symbol = self.symbols.get('cs', 'cs')
         rho_symbol = self.symbols.get('rho', 'rho')
@@ -135,14 +125,14 @@ class EquilibriumFunction:
         self.cs_dim = sp.symbols(cs_symbol, real=True)
         # Standard quadrature lattice coefficient
         self.r_qua = self.cs_dim*sp.sqrt(3)
-        self.cs = self.cs_dim/self.r_qua       # Adimensionnal lattice unit
+        self.cs = self.cs_dim/self.r_qua  # Adimensionnal lattice unit
         self.cs2 = self.cs*self.cs
         self.cs4 = self.cs2*self.cs2
         self.cs8 = self.cs4*self.cs4
         self.one_on_facto_cs2n = compute_one_on_factorial_cs2_n(
             self.order_0, self.cs2)
 
-        # Création des variables symboliques
+        # Creation of symbolic variables
         self.rho = sp.symbols(rho_symbol, real=True)
         self.ux = sp.symbols(ux_symbol, real=True)
         self.uy = sp.symbols(uy_symbol, real=True)
@@ -153,10 +143,10 @@ class EquilibriumFunction:
         self.tp = sp.symbols(tp_symbol, real=True) if self.is_thermal else 1
         self.ups = sp.symbols(ups_symbol, real=True)
 
-        # Initialisation des vecteurs de vitesse et d'accélération
-        self.uvec = {}  # Dictionnaire pour les vitesses
+        # Initialization of velocity and acceleration vectors
+        self.uvec = {}  # Dictionary for velocities
 
-        # Initialisation des polynômes d'Hermite
+        # Initialization of Hermite polynomials
         self.nb_hermite_polynomials = 0
         self.Hi = {}
 
@@ -164,28 +154,29 @@ class EquilibriumFunction:
             u_symbol = self.symbols.get(f'u{coord}', f'u{coord}')
 
             self.uvec[coord] = sp.symbols(u_symbol, real=True)
-            # Autres initialisations nécessaires
+            # Other necessary initializations
+            # ...
 
     def _compute_malaspinas_moments(self):
         self.a0_malaspinas = {'0': self.rho}
         logging.debug(f"Order 0: a0_malaspinas[0] = {self.rho}")
 
-        # Boucle sur les ordres de 1 à order_0
+        # Loop over orders from 1 to order_0
         for order in range(1, self.order_0 + 1):
             if order > MAX_ORDER:
                 raise ValueError(
-                    "L'ordre maximal des polynômes d'Hermite est 4 pour le moment.")
+                    "The maximum order of Hermite polynomials is 4 for now.")
 
-            # Générer les indices pour l'ordre actuel
+            # Generate indices for the current order
             indices_list = generate_indices(
                 self.coords, order, permute=False, as_string=False)
             for indices in indices_list:
                 key = ''.join(indices)
-                # Calculer le produit des vitesses pour les indices donnés
+                # Calculate the product of velocities for the given indices
                 u_product = functools.reduce(
                     operator.mul, [self.uvec[ind] for ind in indices])
 
-                # Stocker le produit dans self.uvec s'il n'existe pas déjà
+                # Store the product in self.uvec if it does not already exist
                 if key not in self.uvec:
                     self.uvec[key] = u_product
 
@@ -200,13 +191,13 @@ class EquilibriumFunction:
         self.p_h = self.rho * self.cs2 * (self.tp - 1)
         self.q_h = self.rho * (self.cs2 * (self.tp - 1)) ** 2
 
-        # Boucle sur les ordres de 1 à order_0
+        # Loop over orders from 1 to order_0
         for order in range(2, self.order_0 + 1):
             if order > MAX_ORDER:
                 raise ValueError(
-                    "L'ordre maximal des polynômes d'Hermite est 4 pour le moment.")
+                    "The maximum order of Hermite polynomials is 4 for now.")
 
-            # Générer les indices pour l'ordre actuel
+            # Generate indices for the current order
             indices_list = generate_indices(
                 self.coords, order, permute=False, as_string=False)
             for indices in indices_list:
@@ -362,9 +353,9 @@ class GradHermite(EquilibriumFunction):
         self.name = self.name+'_grad-hermite'
 
     def compute_feq(self):
-        f_eq = super().compute_feq()  # Appelle la version de bas
+        f_eq = super().compute_feq()  # Calls the base version
 
-        # Boucle sur les ordres
+        # Loop over the orders
         for order in range(1, self.order_0+1):
             f_eq = self._compute_grad_hermite_terms_by_order(f_eq, order)
 
@@ -375,7 +366,7 @@ class RotatedBaseEquilibrium(EquilibriumFunction):
     def __init__(self, D, Q, is_thermal, order_0, iso_terms=False, symbols=None):
         super().__init__(D, Q, is_thermal, order_0, symbols)
         self.iso_terms = iso_terms
-        # Initialisations communes supplémentaires si nécessaire
+        # Additional common initializations if necessary
 
     def _get_hermite_calculator(self):
         hermiteCalculator = super()._get_hermite_calculator()
@@ -399,12 +390,12 @@ class RotatedBaseEquilibrium(EquilibriumFunction):
 
     def _compute_fourth_order_terms(self, f_eq):
         """
-        Méthode à surcharger dans les sous-classes pour le calcul spécifique de l'ordre 4.
+        Method to be overridden in subclasses for specific fourth-order calculations.
         """
         return f_eq
 
     def compute_feq(self):
-        f_eq = super().compute_feq()  # Appelle la version de base
+        f_eq = super().compute_feq()  # Calls the base version
 
         # Compute the rotated Hermite moments
         self._compute_rotated_malaspinas_moments()
@@ -435,10 +426,10 @@ class D3Q19GuoImproved(RotatedBaseEquilibrium):
         iso_terms = True
         super().__init__(D, Q, is_thermal, order_0, iso_terms, symbols)
         self.name = self.name+'_guo-improved'
-        # Autres initialisations spécifiques à GuoImproved_D3Q19
+        # Other specific initializations for GuoImproved_D3Q19
 
     def _compute_fourth_order_terms(self, f_eq):
-        # Implémentation spécifique pour GuoImproved_D3Q19
+        # Specific implementation for GuoImproved_D3Q19
         for index in ['4Ixyz', '4Ixzy', '4Iyzx']:
             self.a0_hermite[index] = -2 * self.rho * self.cs4 * (self.tp - 1)
             factor = self.one_on_facto_cs2n[4]
@@ -466,7 +457,7 @@ class D3Q19Iso(RotatedBaseEquilibrium):
         self.name = self.name+'_iso-v'+str(version)
 
     def _compute_fourth_order_terms(self, f_eq):
-        # Implémentation spécifique pour IsoV1
+        # Specific implementation for IsoV1
         circu = generate_circular_permutation(['zz', 'yy', 'xx'])
         for ind, index in enumerate(['4Ixyz', '4Ixzy', '4Iyzx']):
             if self.version == 1:
@@ -508,10 +499,10 @@ class D3Q19Unified(RotatedBaseEquilibrium):
         iso_terms = False
         super().__init__(D, Q, is_thermal, order_0, iso_terms, symbols)
         self.name = self.name+'_unified'
-        # Autres initialisations spécifiques à Unified
+        # Other specific initializations for Unified
 
     def _compute_hermite_moments(self):
-        super()._compute_hermite_moments()  # Appelle la version de base
+        super()._compute_hermite_moments()  # Calls the base version
 
         # Only modify order 2 to include Upsilon term
         indices_list = generate_indices(
@@ -524,7 +515,7 @@ class D3Q19Unified(RotatedBaseEquilibrium):
             
     
     def compute_feq(self):
-        f_eq = super().compute_feq()  # Appelle la version de base
+        f_eq = super().compute_feq()  # Calls the base version
 
         # Add d0i temperature term
         d0i = get_constant_d0i(self.Q)
