@@ -1,4 +1,30 @@
-# main.py
+Copy
+"""
+main.py
+
+This script performs symbolic Lattice Boltzmann Method (LBM) calculations. 
+It supports various equilibrium functions and output formats, including C++, 
+LaTeX, and custom formats. The script also includes options for optimizing the
+number of floating-point operations (FLOPs) and configuring logging levels.
+
+Usage:
+    python main.py [options]
+
+Options:
+    --D <int>                Spatial dimension (default: 3).
+    --Q <int>                Number of lattice velocities (default: 19).
+    --eq_type <str>          Type of equilibrium function (default: 'grad-hermite').
+    --is_thermal             Enable thermal equilibrium.
+    --order_0 <int>          Order of Hermite expansion for the equilibrium (default: 3).
+    --output_format <str>    Output format (cpp, latex, custom) (default: 'cpp').
+    --optim_flops            Optimize the number of FLOPs.
+    --user_equilibrium_path <str> Path to user equilibrium function script.
+    --user_symbol_path <str> Path to user symbols mapping in JSON.
+    --log_level <str>        Set the logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) (default: 'WARNING').
+
+Example:
+    python main.py --D 3 --Q 19 --eq_type grad-hermite --output_format cpp --log_level INFO
+"""
 import os
 import argparse
 import sympy as sp
